@@ -7,7 +7,7 @@
 # Go test/cache
 *.out
 *.test
-
+*.exe
 # Logs
 *.log
 
