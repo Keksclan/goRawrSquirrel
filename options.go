@@ -9,11 +9,13 @@ import (
 	"github.com/Keksclan/goRawrSquirrel/policy"
 	"github.com/Keksclan/goRawrSquirrel/ratelimit"
 	"github.com/Keksclan/goRawrSquirrel/security"
+	"github.com/Keksclan/goRawrSquirrel/tracing"
 	"google.golang.org/grpc"
 )
 
 // Middleware order constants. Lower values execute first.
 const (
+	orderTracing     = 5
 	orderRecovery    = 10
 	orderIPBlock     = 20
 	orderRateLimit   = 25
@@ -185,5 +187,30 @@ func WithFunRand(src rand.Source) Option {
 func WithFunMessages(msgs []string) Option {
 	return func(c *config) {
 		c.funMessages = msgs
+	}
+}
+
+// WithOpenTelemetry enables OpenTelemetry tracing for every unary and stream
+// RPC. The interceptors extract trace context from incoming metadata, create a
+// server span named after the full method, and record standard RPC attributes
+// and the gRPC status code.
+//
+// Exporter configuration is the caller's responsibility — the library never
+// installs any exporter. When cfg is nil tracing is disabled.
+//
+// Example:
+//
+//	gs.NewServer(
+//		gs.WithOpenTelemetry(tracing.TracingConfig{
+//			TracerProvider: tp,
+//		}),
+//	)
+func WithOpenTelemetry(cfg tracing.TracingConfig) Option {
+	return func(c *config) {
+		c.tracing = &cfg
+		c.middlewares.Add(orderTracing,
+			tracing.UnaryServerInterceptor(&cfg),
+			tracing.StreamServerInterceptor(&cfg),
+		)
 	}
 }
