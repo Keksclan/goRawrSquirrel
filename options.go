@@ -1,6 +1,7 @@
 package gorawrsquirrel
 
 import (
+	"github.com/Keksclan/goRawrSquirrel/auth"
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
 	"github.com/Keksclan/goRawrSquirrel/policy"
 	"github.com/Keksclan/goRawrSquirrel/ratelimit"
@@ -13,6 +14,7 @@ const (
 	orderRecovery    = 10
 	orderIPBlock     = 20
 	orderRateLimit   = 25
+	orderAuth        = 28
 	orderRequestID   = 30
 	orderInterceptor = 100
 )
@@ -56,6 +58,16 @@ func WithIPBlocker(b *security.IPBlocker) Option {
 	return func(c *config) {
 		c.ipBlocker = b
 		c.middlewares.Add(orderIPBlock, interceptors.IPBlockUnary(b), interceptors.IPBlockStream(b))
+	}
+}
+
+// WithAuth registers an authentication middleware that calls the supplied
+// AuthFunc for every request. If the AuthFunc returns an error that is already
+// a gRPC status error it is forwarded as-is; otherwise the error is wrapped as
+// codes.Unauthenticated.
+func WithAuth(fn auth.AuthFunc) Option {
+	return func(c *config) {
+		c.middlewares.Add(orderAuth, interceptors.AuthUnary(fn), interceptors.AuthStream(fn))
 	}
 }
 
