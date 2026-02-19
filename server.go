@@ -6,6 +6,7 @@ import (
 	"github.com/Keksclan/goRawrSquirrel/cache"
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
 	"github.com/Keksclan/goRawrSquirrel/internal/core"
+	"github.com/Keksclan/goRawrSquirrel/ping"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
@@ -66,6 +67,12 @@ func (s *Server) GRPC() *grpc.Server {
 // if no cache was configured.
 func (s *Server) Cache() cache.Cache {
 	return s.cache
+}
+
+// RegisterPing registers the built-in rawr.Ping health-check service on the
+// underlying gRPC server using the supplied [ping.Handler].
+func (s *Server) RegisterPing(h ping.Handler) {
+	ping.Register(s.grpcServer, h)
 }
 
 // MetricsHandler returns an http.Handler that serves Prometheus metrics.
