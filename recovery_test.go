@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Keksclan/goRawrSquirrel/contextx"
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -101,6 +102,43 @@ func TestWithRecoveryIntegrationUnary(t *testing.T) {
 	s := NewServer(WithRecovery())
 	if s == nil {
 		t.Fatal("NewServer(WithRecovery()) returned nil")
+	}
+}
+
+func TestRecoveryUnaryInjectsRequestID(t *testing.T) {
+	ic := interceptors.RecoveryUnary()
+
+	var captured string
+	handler := func(ctx context.Context, req any) (any, error) {
+		captured = contextx.RequestIDFromContext(ctx)
+		return req, nil
+	}
+
+	_, err := ic(t.Context(), "req", &grpc.UnaryServerInfo{}, handler)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if captured == "" {
+		t.Fatal("expected request ID in context, got empty string")
+	}
+}
+
+func TestRecoveryUnaryPreservesExistingRequestID(t *testing.T) {
+	ic := interceptors.RecoveryUnary()
+
+	ctx := contextx.WithRequestID(t.Context(), "existing-id")
+	var captured string
+	handler := func(ctx context.Context, req any) (any, error) {
+		captured = contextx.RequestIDFromContext(ctx)
+		return req, nil
+	}
+
+	_, err := ic(ctx, "req", &grpc.UnaryServerInfo{}, handler)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if captured != "existing-id" {
+		t.Fatalf("got %q, want %q", captured, "existing-id")
 	}
 }
 
