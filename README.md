@@ -1,5 +1,11 @@
 # goRawrSquirrel 🐿️
 
+<!-- badges -->
+![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white)
+![License](https://img.shields.io/badge/License-Apache--2.0-blue)
+![CI](https://img.shields.io/github/actions/workflow/status/Keksclan/goRawrSquirrel/ci.yml?label=CI)
+![Release](https://img.shields.io/github/v/release/Keksclan/goRawrSquirrel?include_prereleases)
+
 **Composable, opinionated gRPC middleware toolkit for Go**
 
 ---
