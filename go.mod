@@ -1,6 +1,6 @@
 module github.com/Keksclan/goRawrSquirrel
 
-go 1.26
+go 1.24.0
 
 require (
 	github.com/dgraph-io/ristretto/v2 v2.4.0
