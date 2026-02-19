@@ -2,6 +2,7 @@ package gorawrsquirrel
 
 import (
 	"github.com/Keksclan/goRawrSquirrel/auth"
+	"github.com/Keksclan/goRawrSquirrel/cache"
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
 	"github.com/Keksclan/goRawrSquirrel/policy"
 	"github.com/Keksclan/goRawrSquirrel/ratelimit"
@@ -77,5 +78,17 @@ func WithRateLimitGlobal(rps float64, burst int) Option {
 	return func(c *config) {
 		l := ratelimit.NewLimiter(rps, burst)
 		c.middlewares.Add(orderRateLimit, interceptors.RateLimitUnary(l), interceptors.RateLimitStream(l))
+	}
+}
+
+// WithCacheL1 enables an in-process L1 cache backed by ristretto.
+// maxEntries controls how many entries the cache can hold.
+func WithCacheL1(maxEntries int) Option {
+	return func(c *config) {
+		l1, err := cache.NewL1(int64(maxEntries))
+		if err != nil {
+			panic("gorawrsquirrel: failed to create L1 cache: " + err.Error())
+		}
+		c.cache = l1
 	}
 }

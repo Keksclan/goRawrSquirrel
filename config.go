@@ -1,6 +1,7 @@
 package gorawrsquirrel
 
 import (
+	"github.com/Keksclan/goRawrSquirrel/cache"
 	"github.com/Keksclan/goRawrSquirrel/internal/core"
 	"github.com/Keksclan/goRawrSquirrel/policy"
 	"github.com/Keksclan/goRawrSquirrel/security"
@@ -11,4 +12,5 @@ type config struct {
 	middlewares core.MiddlewareBuilder
 	resolver    *policy.Resolver
 	ipBlocker   *security.IPBlocker
+	cache       cache.Cache
 }
