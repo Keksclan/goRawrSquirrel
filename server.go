@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
+	"github.com/Keksclan/goRawrSquirrel/internal/core"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
@@ -21,15 +22,8 @@ func NewServer(opts ...Option) *Server {
 		o(&cfg)
 	}
 
-	var serverOpts []grpc.ServerOption
-
-	if u := interceptors.ChainUnary(cfg.unaryInterceptors); u != nil {
-		serverOpts = append(serverOpts, grpc.UnaryInterceptor(u))
-	}
-
-	if s := interceptors.ChainStream(cfg.streamInterceptors); s != nil {
-		serverOpts = append(serverOpts, grpc.StreamInterceptor(s))
-	}
+	unary, stream := cfg.middlewares.Build()
+	serverOpts := core.BuildServerOptions(unary, stream, interceptors.ChainUnary, interceptors.ChainStream)
 
 	return &Server{
 		grpcServer: grpc.NewServer(serverOpts...),

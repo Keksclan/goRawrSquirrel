@@ -84,15 +84,16 @@ func TestRecoveryStreamPassthroughOnNoPanic(t *testing.T) {
 	}
 }
 
-func TestWithRecoveryPrependsInterceptors(t *testing.T) {
+func TestWithRecoveryRegistersMiddleware(t *testing.T) {
 	var cfg config
 	WithRecovery()(&cfg)
 
-	if len(cfg.unaryInterceptors) != 1 {
-		t.Fatalf("expected 1 unary interceptor, got %d", len(cfg.unaryInterceptors))
+	unary, stream := cfg.middlewares.Build()
+	if len(unary) != 1 {
+		t.Fatalf("expected 1 unary interceptor, got %d", len(unary))
 	}
-	if len(cfg.streamInterceptors) != 1 {
-		t.Fatalf("expected 1 stream interceptor, got %d", len(cfg.streamInterceptors))
+	if len(stream) != 1 {
+		t.Fatalf("expected 1 stream interceptor, got %d", len(stream))
 	}
 }
 

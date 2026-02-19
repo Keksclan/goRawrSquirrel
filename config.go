@@ -1,9 +1,8 @@
 package gorawrsquirrel
 
-import "google.golang.org/grpc"
+import "github.com/Keksclan/goRawrSquirrel/internal/core"
 
 // config holds the internal configuration assembled via functional options.
 type config struct {
-	unaryInterceptors  []grpc.UnaryServerInterceptor
-	streamInterceptors []grpc.StreamServerInterceptor
+	middlewares core.MiddlewareBuilder
 }

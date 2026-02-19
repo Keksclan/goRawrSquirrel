@@ -5,20 +5,26 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Middleware order constants. Lower values execute first.
+const (
+	orderRecovery    = 0
+	orderInterceptor = 100
+)
+
 // Option configures a Server.
 type Option func(*config)
 
 // WithUnaryInterceptor appends a unary server interceptor to the chain.
 func WithUnaryInterceptor(i grpc.UnaryServerInterceptor) Option {
 	return func(c *config) {
-		c.unaryInterceptors = append(c.unaryInterceptors, i)
+		c.middlewares.Add(orderInterceptor, i, nil)
 	}
 }
 
 // WithStreamInterceptor appends a stream server interceptor to the chain.
 func WithStreamInterceptor(i grpc.StreamServerInterceptor) Option {
 	return func(c *config) {
-		c.streamInterceptors = append(c.streamInterceptors, i)
+		c.middlewares.Add(orderInterceptor, nil, i)
 	}
 }
 
@@ -27,7 +33,6 @@ func WithStreamInterceptor(i grpc.StreamServerInterceptor) Option {
 // crashing the process.
 func WithRecovery() Option {
 	return func(c *config) {
-		c.unaryInterceptors = append([]grpc.UnaryServerInterceptor{interceptors.RecoveryUnary()}, c.unaryInterceptors...)
-		c.streamInterceptors = append([]grpc.StreamServerInterceptor{interceptors.RecoveryStream()}, c.streamInterceptors...)
+		c.middlewares.Add(orderRecovery, interceptors.RecoveryUnary(), interceptors.RecoveryStream())
 	}
 }
