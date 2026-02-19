@@ -1,8 +1,14 @@
 package gorawrsquirrel
 
-import "github.com/Keksclan/goRawrSquirrel/internal/core"
+import (
+	"github.com/Keksclan/goRawrSquirrel/internal/core"
+	"github.com/Keksclan/goRawrSquirrel/policy"
+	"github.com/Keksclan/goRawrSquirrel/security"
+)
 
 // config holds the internal configuration assembled via functional options.
 type config struct {
 	middlewares core.MiddlewareBuilder
+	resolver    *policy.Resolver
+	ipBlocker   *security.IPBlocker
 }

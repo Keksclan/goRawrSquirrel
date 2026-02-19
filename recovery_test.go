@@ -90,11 +90,11 @@ func TestWithRecoveryRegistersMiddleware(t *testing.T) {
 	WithRecovery()(&cfg)
 
 	unary, stream := cfg.middlewares.Build()
-	if len(unary) != 1 {
-		t.Fatalf("expected 1 unary interceptor, got %d", len(unary))
+	if len(unary) != 2 {
+		t.Fatalf("expected 2 unary interceptors, got %d", len(unary))
 	}
-	if len(stream) != 1 {
-		t.Fatalf("expected 1 stream interceptor, got %d", len(stream))
+	if len(stream) != 2 {
+		t.Fatalf("expected 2 stream interceptors, got %d", len(stream))
 	}
 }
 
@@ -105,8 +105,8 @@ func TestWithRecoveryIntegrationUnary(t *testing.T) {
 	}
 }
 
-func TestRecoveryUnaryInjectsRequestID(t *testing.T) {
-	ic := interceptors.RecoveryUnary()
+func TestRequestIDUnaryInjectsRequestID(t *testing.T) {
+	ic := interceptors.RequestIDUnary()
 
 	var captured string
 	handler := func(ctx context.Context, req any) (any, error) {
@@ -123,8 +123,8 @@ func TestRecoveryUnaryInjectsRequestID(t *testing.T) {
 	}
 }
 
-func TestRecoveryUnaryPreservesExistingRequestID(t *testing.T) {
-	ic := interceptors.RecoveryUnary()
+func TestRequestIDUnaryPreservesExistingRequestID(t *testing.T) {
+	ic := interceptors.RequestIDUnary()
 
 	ctx := contextx.WithRequestID(t.Context(), "existing-id")
 	var captured string

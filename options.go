@@ -2,12 +2,16 @@ package gorawrsquirrel
 
 import (
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
+	"github.com/Keksclan/goRawrSquirrel/policy"
+	"github.com/Keksclan/goRawrSquirrel/security"
 	"google.golang.org/grpc"
 )
 
 // Middleware order constants. Lower values execute first.
 const (
-	orderRecovery    = 0
+	orderRecovery    = 10
+	orderIPBlock     = 20
+	orderRequestID   = 30
 	orderInterceptor = 100
 )
 
@@ -34,5 +38,21 @@ func WithStreamInterceptor(i grpc.StreamServerInterceptor) Option {
 func WithRecovery() Option {
 	return func(c *config) {
 		c.middlewares.Add(orderRecovery, interceptors.RecoveryUnary(), interceptors.RecoveryStream())
+		c.middlewares.Add(orderRequestID, interceptors.RequestIDUnary(), interceptors.RequestIDStream())
+	}
+}
+
+// WithResolver sets the policy resolver used for method-level policy lookup.
+func WithResolver(r *policy.Resolver) Option {
+	return func(c *config) {
+		c.resolver = r
+	}
+}
+
+// WithIPBlocker sets the IP blocker and registers the IP-block middleware.
+func WithIPBlocker(b *security.IPBlocker) Option {
+	return func(c *config) {
+		c.ipBlocker = b
+		c.middlewares.Add(orderIPBlock, interceptors.IPBlockUnary(b), interceptors.IPBlockStream(b))
 	}
 }
