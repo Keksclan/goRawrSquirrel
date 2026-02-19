@@ -1,6 +1,6 @@
-// Package main demonstrates the L1 caching feature of goRawrSquirrel.
-// It caches a computed value and shows that the second call is served from
-// cache (significantly faster).
+// Package main demonstrates the caching feature of goRawrSquirrel.
+// When REDIS_ADDR is set it enables a two-level cache (L1 + Redis L2);
+// otherwise only the in-process L1 cache is used.
 package main
 
 import (
@@ -13,10 +13,19 @@ import (
 )
 
 func main() {
-	srv := gs.NewServer(
+	opts := []gs.Option{
 		gs.WithRecovery(),
 		gs.WithCacheL1(1000),
-	)
+	}
+
+	if addr := os.Getenv("REDIS_ADDR"); addr != "" {
+		fmt.Printf("Redis L2 enabled (%s)\n", addr)
+		opts = append(opts, gs.WithCacheRedis(addr, "", 0))
+	} else {
+		fmt.Println("Redis L2 not configured (set REDIS_ADDR to enable)")
+	}
+
+	srv := gs.NewServer(opts...)
 
 	c := srv.Cache()
 	ctx := context.Background()

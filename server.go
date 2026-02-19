@@ -24,6 +24,11 @@ func NewServer(opts ...Option) *Server {
 		o(&cfg)
 	}
 
+	// When both L1 and L2 are configured, combine them into a tiered cache.
+	if cfg.l1 != nil && cfg.l2 != nil {
+		cfg.cache = cache.NewTiered(cfg.l1, cfg.l2)
+	}
+
 	unary, stream := cfg.middlewares.Build()
 	serverOpts := core.BuildServerOptions(unary, stream, interceptors.ChainUnary, interceptors.ChainStream)
 

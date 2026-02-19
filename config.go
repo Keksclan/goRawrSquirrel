@@ -13,4 +13,6 @@ type config struct {
 	resolver    *policy.Resolver
 	ipBlocker   *security.IPBlocker
 	cache       cache.Cache
+	l1          *cache.L1
+	l2          *cache.L2
 }

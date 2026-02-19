@@ -89,6 +89,16 @@ func WithCacheL1(maxEntries int) Option {
 		if err != nil {
 			panic("gorawrsquirrel: failed to create L1 cache: " + err.Error())
 		}
+		c.l1 = l1
 		c.cache = l1
+	}
+}
+
+// WithCacheRedis enables a Redis-backed L2 cache. When combined with
+// WithCacheL1 the resulting cache checks L1 first, then L2, then the loader.
+// If Redis is unavailable at runtime, operations fail soft (no panics).
+func WithCacheRedis(addr, password string, db int) Option {
+	return func(c *config) {
+		c.l2 = cache.NewL2(addr, password, db)
 	}
 }
