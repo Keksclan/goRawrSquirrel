@@ -3,6 +3,7 @@ package gorawrsquirrel
 import (
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
 	"github.com/Keksclan/goRawrSquirrel/policy"
+	"github.com/Keksclan/goRawrSquirrel/ratelimit"
 	"github.com/Keksclan/goRawrSquirrel/security"
 	"google.golang.org/grpc"
 )
@@ -11,6 +12,7 @@ import (
 const (
 	orderRecovery    = 10
 	orderIPBlock     = 20
+	orderRateLimit   = 25
 	orderRequestID   = 30
 	orderInterceptor = 100
 )
@@ -54,5 +56,14 @@ func WithIPBlocker(b *security.IPBlocker) Option {
 	return func(c *config) {
 		c.ipBlocker = b
 		c.middlewares.Add(orderIPBlock, interceptors.IPBlockUnary(b), interceptors.IPBlockStream(b))
+	}
+}
+
+// WithRateLimitGlobal enables a global token-bucket rate limiter that rejects
+// requests with codes.ResourceExhausted when the limit is exceeded.
+func WithRateLimitGlobal(rps float64, burst int) Option {
+	return func(c *config) {
+		l := ratelimit.NewLimiter(rps, burst)
+		c.middlewares.Add(orderRateLimit, interceptors.RateLimitUnary(l), interceptors.RateLimitStream(l))
 	}
 }
