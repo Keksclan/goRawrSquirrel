@@ -2,7 +2,6 @@ package gorawrsquirrel
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -162,6 +161,6 @@ func TestNewServerWithInterceptors(t *testing.T) {
 func TestOptionFunc(t *testing.T) {
 	// Verify that Option is a func(*config) — compile-time check.
 	var _ Option = func(c *config) {
-		fmt.Sprintf("config: %v", c)
+		_ = c
 	}
 }

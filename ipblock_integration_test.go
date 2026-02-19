@@ -38,9 +38,7 @@ func TestIPBlockIntegrationBlockedReturnsPermissionDenied(t *testing.T) {
 	lis := bufconn.Listen(bufSize)
 
 	go func() {
-		if err := srv.GRPC().Serve(lis); err != nil {
-			// Server stopped; ignore.
-		}
+		_ = srv.GRPC().Serve(lis)
 	}()
 	t.Cleanup(func() { srv.GRPC().Stop() })
 
