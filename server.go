@@ -1,8 +1,9 @@
-package server
+package gorawrsquirrel
 
 import (
 	"net/http"
 
+	"github.com/Keksclan/goRawrSquirrel/interceptors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
@@ -22,11 +23,11 @@ func NewServer(opts ...Option) *Server {
 
 	var serverOpts []grpc.ServerOption
 
-	if u := chainUnary(cfg.unaryInterceptors); u != nil {
+	if u := interceptors.ChainUnary(cfg.unaryInterceptors); u != nil {
 		serverOpts = append(serverOpts, grpc.UnaryInterceptor(u))
 	}
 
-	if s := chainStream(cfg.streamInterceptors); s != nil {
+	if s := interceptors.ChainStream(cfg.streamInterceptors); s != nil {
 		serverOpts = append(serverOpts, grpc.StreamInterceptor(s))
 	}
 

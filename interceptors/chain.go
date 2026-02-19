@@ -1,4 +1,4 @@
-package server
+package interceptors
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-// chainUnary composes multiple unary interceptors into a single one.
+// ChainUnary composes multiple unary interceptors into a single one.
 // Interceptors execute in the order they appear in the slice.
-func chainUnary(interceptors []grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
+func ChainUnary(interceptors []grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
 	switch len(interceptors) {
 	case 0:
 		return nil
@@ -34,9 +34,9 @@ func chainUnary(interceptors []grpc.UnaryServerInterceptor) grpc.UnaryServerInte
 	}
 }
 
-// chainStream composes multiple stream interceptors into a single one.
+// ChainStream composes multiple stream interceptors into a single one.
 // Interceptors execute in the order they appear in the slice.
-func chainStream(interceptors []grpc.StreamServerInterceptor) grpc.StreamServerInterceptor {
+func ChainStream(interceptors []grpc.StreamServerInterceptor) grpc.StreamServerInterceptor {
 	switch len(interceptors) {
 	case 0:
 		return nil

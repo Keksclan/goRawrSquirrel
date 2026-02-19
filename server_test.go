@@ -1,4 +1,4 @@
-package server
+package gorawrsquirrel
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Keksclan/goRawrSquirrel/interceptors"
 	"google.golang.org/grpc"
 )
 
@@ -52,7 +53,7 @@ func TestChainUnaryOrder(t *testing.T) {
 	b := makeUnaryInterceptor("B", &log)
 	c := makeUnaryInterceptor("C", &log)
 
-	chained := chainUnary([]grpc.UnaryServerInterceptor{a, b, c})
+	chained := interceptors.ChainUnary([]grpc.UnaryServerInterceptor{a, b, c})
 
 	handler := func(ctx context.Context, req any) (any, error) {
 		log = append(log, "handler")
@@ -84,7 +85,7 @@ func TestChainUnarySingle(t *testing.T) {
 		called = true
 		return handler(ctx, req)
 	}
-	chained := chainUnary([]grpc.UnaryServerInterceptor{ic})
+	chained := interceptors.ChainUnary([]grpc.UnaryServerInterceptor{ic})
 
 	_, _ = chained(t.Context(), nil, &grpc.UnaryServerInfo{}, func(ctx context.Context, req any) (any, error) {
 		return nil, nil
@@ -95,9 +96,9 @@ func TestChainUnarySingle(t *testing.T) {
 }
 
 func TestChainUnaryNil(t *testing.T) {
-	chained := chainUnary(nil)
+	chained := interceptors.ChainUnary(nil)
 	if chained != nil {
-		t.Fatal("chainUnary(nil) should return nil")
+		t.Fatal("ChainUnary(nil) should return nil")
 	}
 }
 
@@ -121,7 +122,7 @@ func TestChainStreamOrder(t *testing.T) {
 	a := makeStreamInterceptor("A", &log)
 	b := makeStreamInterceptor("B", &log)
 
-	chained := chainStream([]grpc.StreamServerInterceptor{a, b})
+	chained := interceptors.ChainStream([]grpc.StreamServerInterceptor{a, b})
 
 	handler := func(srv any, ss grpc.ServerStream) error {
 		log = append(log, "handler")
