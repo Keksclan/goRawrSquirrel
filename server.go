@@ -23,6 +23,7 @@ import (
 type Server struct {
 	grpcServer *grpc.Server
 	cache      cache.Cache
+	cfg        config
 }
 
 // NewServer creates a new [Server] by applying the supplied functional [Option]
@@ -55,6 +56,7 @@ func NewServer(opts ...Option) *Server {
 	return &Server{
 		grpcServer: grpc.NewServer(serverOpts...),
 		cache:      cfg.cache,
+		cfg:        cfg,
 	}
 }
 
@@ -70,8 +72,17 @@ func (s *Server) Cache() cache.Cache {
 }
 
 // RegisterPing registers the built-in rawr.Ping health-check service on the
-// underlying gRPC server using the supplied [ping.Handler].
+// underlying gRPC server using the supplied [ping.Handler]. If h is nil and
+// FunMode is enabled (via [WithFunMode]), a fun handler is used; otherwise
+// the default echo handler is registered.
 func (s *Server) RegisterPing(h ping.Handler) {
+	if h == nil {
+		if s.cfg.funMode {
+			h = ping.FunHandler(s.cfg.funRand)
+		} else {
+			h = ping.DefaultHandler()
+		}
+	}
 	ping.Register(s.grpcServer, h)
 }
 

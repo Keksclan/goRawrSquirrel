@@ -1,6 +1,8 @@
 package gorawrsquirrel
 
 import (
+	"math/rand"
+
 	"github.com/Keksclan/goRawrSquirrel/cache"
 	"github.com/Keksclan/goRawrSquirrel/internal/core"
 	"github.com/Keksclan/goRawrSquirrel/policy"
@@ -15,4 +17,6 @@ type config struct {
 	cache       cache.Cache
 	l1          *cache.L1
 	l2          *cache.L2
+	funMode     bool
+	funRand     rand.Source
 }

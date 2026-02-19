@@ -1,6 +1,8 @@
 package gorawrsquirrel
 
 import (
+	"math/rand"
+
 	"github.com/Keksclan/goRawrSquirrel/auth"
 	"github.com/Keksclan/goRawrSquirrel/cache"
 	"github.com/Keksclan/goRawrSquirrel/interceptors"
@@ -155,5 +157,23 @@ func WithCacheL1(maxEntries int) Option {
 func WithCacheRedis(addr, password string, db int) Option {
 	return func(c *config) {
 		c.l2 = cache.NewL2(addr, password, db)
+	}
+}
+
+// WithFunMode enables or disables FunMode for the built-in Ping handler.
+// When enabled, the Ping handler occasionally replaces the echoed message
+// with a fun response. FunMode is off by default.
+func WithFunMode(enabled bool) Option {
+	return func(c *config) {
+		c.funMode = enabled
+	}
+}
+
+// WithFunRand sets the random source used by FunMode. This is primarily
+// useful in tests to make the random behavior deterministic. If not set
+// and FunMode is enabled, a time-seeded source is used.
+func WithFunRand(src rand.Source) Option {
+	return func(c *config) {
+		c.funRand = src
 	}
 }

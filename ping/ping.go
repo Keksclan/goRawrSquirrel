@@ -13,6 +13,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"google.golang.org/grpc"
@@ -54,6 +55,43 @@ type defaultHandler struct{}
 func (defaultHandler) Ping(_ context.Context, req *PingRequest) (*PingResponse, error) {
 	return &PingResponse{
 		Message:        req.Message,
+		ServerTimeUnix: time.Now().Unix(),
+	}, nil
+}
+
+// funMessages is the pool of fun responses used when FunMode is enabled.
+var funMessages = []string{
+	"Squirrel power!",
+	"Nom nom nom acorns!",
+	"Tail flick activated!",
+	"Scurry mode engaged!",
+	"Nuts about this request!",
+}
+
+// FunHandler returns a Handler that, when FunMode is enabled, occasionally
+// (1 in 5 chance) replaces the echoed message with a fun response chosen
+// from an internal list. When the random check does not trigger, the
+// request message is echoed normally.
+//
+// src may be nil; in that case a time-seeded source is used.
+func FunHandler(src rand.Source) Handler {
+	if src == nil {
+		src = rand.NewSource(time.Now().UnixNano())
+	}
+	return funHandler{rng: rand.New(src)}
+}
+
+type funHandler struct {
+	rng *rand.Rand
+}
+
+func (h funHandler) Ping(_ context.Context, req *PingRequest) (*PingResponse, error) {
+	msg := req.Message
+	if h.rng.Intn(5) == 0 {
+		msg = funMessages[h.rng.Intn(len(funMessages))]
+	}
+	return &PingResponse{
+		Message:        msg,
 		ServerTimeUnix: time.Now().Unix(),
 	}, nil
 }
