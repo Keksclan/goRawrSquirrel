@@ -177,3 +177,13 @@ func WithFunRand(src rand.Source) Option {
 		c.funRand = src
 	}
 }
+
+// WithFunMessages sets custom fun messages used by FunMode. When FunMode is
+// enabled, the Ping handler randomly picks from this list instead of the
+// built-in defaults. This allows callers to inject their own messages
+// without the library embedding any branded or franchise-specific content.
+func WithFunMessages(msgs []string) Option {
+	return func(c *config) {
+		c.funMessages = msgs
+	}
+}

@@ -99,15 +99,6 @@ func TestPingEmptyMessage(t *testing.T) {
 	}
 }
 
-// funMessages mirrors the internal list in ping.go for test assertions.
-var funMessages = []string{
-	"Squirrel power!",
-	"Nom nom nom acorns!",
-	"Tail flick activated!",
-	"Scurry mode engaged!",
-	"Nuts about this request!",
-}
-
 func TestDefaultHandler_FunModeOff_NeverReturnsFunMessage(t *testing.T) {
 	h := ping.DefaultHandler()
 	for range 100 {
@@ -115,7 +106,7 @@ func TestDefaultHandler_FunModeOff_NeverReturnsFunMessage(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if slices.Contains(funMessages, resp.Message) {
+		if slices.Contains(ping.DefaultFunMessages, resp.Message) {
 			t.Fatalf("DefaultHandler returned fun message %q, expected echo", resp.Message)
 		}
 		if resp.Message != "hello" {
@@ -126,7 +117,7 @@ func TestDefaultHandler_FunModeOff_NeverReturnsFunMessage(t *testing.T) {
 
 func TestFunHandler_DeterministicRand_ReturnsFunMessage(t *testing.T) {
 	src := rand.NewSource(42)
-	h := ping.FunHandler(src)
+	h := ping.FunHandler(src, nil)
 
 	var gotFun, gotEcho bool
 	for range 20 {
@@ -134,7 +125,7 @@ func TestFunHandler_DeterministicRand_ReturnsFunMessage(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if slices.Contains(funMessages, resp.Message) {
+		if slices.Contains(ping.DefaultFunMessages, resp.Message) {
 			gotFun = true
 		} else if resp.Message == "hello" {
 			gotEcho = true
@@ -150,10 +141,37 @@ func TestFunHandler_DeterministicRand_ReturnsFunMessage(t *testing.T) {
 	}
 }
 
+func TestFunHandler_CustomMessages(t *testing.T) {
+	custom := []string{"alpha", "bravo", "charlie"}
+	src := rand.NewSource(42)
+	h := ping.FunHandler(src, custom)
+
+	var gotCustom, gotEcho bool
+	for range 20 {
+		resp, err := h.Ping(t.Context(), &ping.PingRequest{Message: "hello"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if slices.Contains(custom, resp.Message) {
+			gotCustom = true
+		} else if resp.Message == "hello" {
+			gotEcho = true
+		} else {
+			t.Fatalf("unexpected message: %q", resp.Message)
+		}
+	}
+	if !gotCustom {
+		t.Fatal("FunHandler with custom messages never produced a custom message in 20 calls")
+	}
+	if !gotEcho {
+		t.Fatal("FunHandler with custom messages never echoed in 20 calls")
+	}
+}
+
 func TestFunHandler_DeterministicRand_Reproducible(t *testing.T) {
 	collect := func() []string {
 		src := rand.NewSource(7)
-		h := ping.FunHandler(src)
+		h := ping.FunHandler(src, nil)
 		msgs := make([]string, 10)
 		for i := range 10 {
 			resp, err := h.Ping(t.Context(), &ping.PingRequest{Message: "test"})

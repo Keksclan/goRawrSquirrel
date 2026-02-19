@@ -19,4 +19,5 @@ type config struct {
 	l2          *cache.L2
 	funMode     bool
 	funRand     rand.Source
+	funMessages []string
 }

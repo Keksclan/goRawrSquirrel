@@ -78,7 +78,7 @@ func (s *Server) Cache() cache.Cache {
 func (s *Server) RegisterPing(h ping.Handler) {
 	if h == nil {
 		if s.cfg.funMode {
-			h = ping.FunHandler(s.cfg.funRand)
+			h = ping.FunHandler(s.cfg.funRand, s.cfg.funMessages)
 		} else {
 			h = ping.DefaultHandler()
 		}

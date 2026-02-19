@@ -15,6 +15,12 @@ import (
 )
 
 func main() {
+	// You can supply your own fun messages when FunMode is enabled:
+	//   srv := gs.NewServer(
+	//       gs.WithRecovery(),
+	//       gs.WithFunMode(true),
+	//       gs.WithFunMessages([]string{"Woo!", "High five!", "Nailed it!"}),
+	//   )
 	srv := gs.NewServer(gs.WithRecovery())
 	srv.RegisterPing(ping.DefaultHandler())
 

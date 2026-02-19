@@ -35,7 +35,7 @@ framework lock-in.
 - [x] L1 in-process cache (ristretto)
 - [x] L2 Redis cache with tiered fallback
 - [x] Prometheus metrics endpoint
-- [x] FunMode — optional playful Ping responses (off by default)
+- [x] FunMode — optional playful Ping responses (off by default, user-supplied messages supported)
 - [ ] OpenTelemetry tracing glue
 - [ ] Retry / back-off helpers
 - [ ] Circuit breaker

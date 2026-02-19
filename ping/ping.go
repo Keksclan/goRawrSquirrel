@@ -59,36 +59,44 @@ func (defaultHandler) Ping(_ context.Context, req *PingRequest) (*PingResponse, 
 	}, nil
 }
 
-// funMessages is the pool of fun responses used when FunMode is enabled.
-var funMessages = []string{
+// DefaultFunMessages is the pool of fun responses used when FunMode is
+// enabled and no custom messages have been supplied via WithFunMessages.
+var DefaultFunMessages = []string{
 	"Squirrel power!",
 	"Nom nom nom acorns!",
 	"Tail flick activated!",
 	"Scurry mode engaged!",
 	"Nuts about this request!",
+	"Try use Go Charm its very fun thx to the authors",
+	"Katha is scary",
 }
 
 // FunHandler returns a Handler that, when FunMode is enabled, occasionally
 // (1 in 5 chance) replaces the echoed message with a fun response chosen
-// from an internal list. When the random check does not trigger, the
-// request message is echoed normally.
+// from msgs. When the random check does not trigger, the request message
+// is echoed normally.
 //
+// If msgs is nil or empty, DefaultFunMessages is used.
 // src may be nil; in that case a time-seeded source is used.
-func FunHandler(src rand.Source) Handler {
+func FunHandler(src rand.Source, msgs []string) Handler {
 	if src == nil {
 		src = rand.NewSource(time.Now().UnixNano())
 	}
-	return funHandler{rng: rand.New(src)}
+	if len(msgs) == 0 {
+		msgs = DefaultFunMessages
+	}
+	return funHandler{rng: rand.New(src), msgs: msgs}
 }
 
 type funHandler struct {
-	rng *rand.Rand
+	rng  *rand.Rand
+	msgs []string
 }
 
 func (h funHandler) Ping(_ context.Context, req *PingRequest) (*PingResponse, error) {
 	msg := req.Message
 	if h.rng.Intn(5) == 0 {
-		msg = funMessages[h.rng.Intn(len(funMessages))]
+		msg = h.msgs[h.rng.Intn(len(h.msgs))]
 	}
 	return &PingResponse{
 		Message:        msg,
