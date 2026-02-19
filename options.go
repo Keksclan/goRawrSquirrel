@@ -74,10 +74,16 @@ func WithAuth(fn auth.AuthFunc) Option {
 
 // WithRateLimitGlobal enables a global token-bucket rate limiter that rejects
 // requests with codes.ResourceExhausted when the limit is exceeded.
+// When a policy resolver has been configured via WithResolver and a method
+// matches a group with a RateLimit rule, the per-group limit is used instead
+// of the global one.
 func WithRateLimitGlobal(rps float64, burst int) Option {
 	return func(c *config) {
 		l := ratelimit.NewLimiter(rps, burst)
-		c.middlewares.Add(orderRateLimit, interceptors.RateLimitUnary(l), interceptors.RateLimitStream(l))
+		c.middlewares.Add(orderRateLimit,
+			interceptors.RateLimitUnary(l, c.resolver),
+			interceptors.RateLimitStream(l, c.resolver),
+		)
 	}
 }
 
