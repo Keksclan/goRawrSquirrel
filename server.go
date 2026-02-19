@@ -10,14 +10,33 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Server is a minimal wrapper around a gRPC server with optional metrics.
+// Server is a composable wrapper around a [grpc.Server] that layers middleware
+// (recovery, authentication, rate limiting, caching, IP blocking) via
+// functional [Option] values passed to [NewServer].
+//
+// After construction the underlying gRPC server is available through [Server.GRPC]
+// so that service implementations can be registered normally:
+//
+//	srv := gs.NewServer(gs.WithRecovery())
+//	pb.RegisterMyServiceServer(srv.GRPC(), &myImpl{})
 type Server struct {
 	grpcServer *grpc.Server
 	cache      cache.Cache
 }
 
-// NewServer creates a Server by applying functional options and wiring the
-// resulting interceptor chains into grpc.NewServer.
+// NewServer creates a new [Server] by applying the supplied functional [Option]
+// values and wiring the resulting unary and stream interceptor chains into
+// [grpc.NewServer]. Middleware execution order is determined by fixed priority
+// levels (see package-level constants), not by the order options are passed.
+//
+// Example:
+//
+//	srv := gs.NewServer(
+//		gs.WithRecovery(),
+//		gs.WithRateLimitGlobal(500, 100),
+//		gs.WithAuth(myAuthFunc),
+//		gs.WithCacheL1(10_000),
+//	)
 func NewServer(opts ...Option) *Server {
 	var cfg config
 	for _, o := range opts {

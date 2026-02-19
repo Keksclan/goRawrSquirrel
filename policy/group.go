@@ -13,7 +13,17 @@ type RateLimitRule struct {
 	Window time.Duration
 }
 
-// Policy holds the configuration that applies to a matched method group.
+// Policy holds the configuration that applies to every gRPC method matched by
+// a [Group]. Fields are evaluated by the middleware stack: RateLimit overrides
+// the global rate limiter, Timeout caps handler execution time, and
+// AuthRequired enforces authentication for the matched methods.
+//
+// Example:
+//
+//	p := policy.Policy{
+//		RateLimit:    &policy.RateLimitRule{Rate: 100, Window: time.Second},
+//		AuthRequired: true,
+//	}
 type Policy struct {
 	RateLimit    *RateLimitRule
 	Timeout      time.Duration
@@ -44,7 +54,16 @@ type GroupBuilder struct {
 	policy *Policy
 }
 
-// Group starts building a new method group with the given name.
+// Group starts building a new method group identified by name. Chain
+// [GroupBuilder.Exact], [GroupBuilder.Prefix], or [GroupBuilder.Regex] to
+// specify which gRPC methods belong to the group, then call
+// [GroupBuilder.Policy] to attach the desired [Policy].
+//
+// Example:
+//
+//	g := policy.Group("admin").
+//		Prefix("/admin.v1.").
+//		Policy(policy.Policy{AuthRequired: true})
 func Group(name string) *GroupBuilder {
 	return &GroupBuilder{name: name}
 }

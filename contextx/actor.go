@@ -2,7 +2,15 @@ package contextx
 
 import "context"
 
-// Actor describes the authenticated caller for a request.
+// Actor represents the authenticated identity behind a request. It is
+// typically populated by an authentication interceptor and stored in the
+// request context via [WithActor]. Downstream handlers retrieve it with
+// [ActorFromContext].
+//
+// Example:
+//
+//	actor := contextx.Actor{Subject: "user-42", Tenant: "acme"}
+//	ctx = contextx.WithActor(ctx, actor)
 type Actor struct {
 	Subject  string
 	Tenant   string
